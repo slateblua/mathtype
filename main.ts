@@ -1,89 +1,187 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {
+	App,
+	Editor,
+	EditorPosition,
+	EditorSuggest,
+	EditorSuggestContext,
+	EditorSuggestTriggerInfo,
+	Plugin,
+	PluginSettingTab,
+	Setting
+} from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface MathTypePrefs {
+	customMappings: { [key: string]: string };
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFUALT_PREFS: MathTypePrefs = {
+	customMappings: {
+		// Basic Operations
+		'fraction': '\\frac{numerator}{denominator}',
+		'sum': '\\sum_{i=1}^{n}',
+		'product': '\\prod_{i=1}^{n}',
+		'integral': '\\int_{a}^{b}',
+		'double integral': '\\iint_{D}',
+		'triple integral': '\\iiint_{V}',
+		'contour integral': '\\oint_{C}',
+		
+		// Roots and Powers
+		'square root': '\\sqrt{x}',
+		'nth root': '\\sqrt[n]{x}',
+		'power': 'x^{n}',
+		'subscript': 'x_{i}',
+
+		// Limits and Infinity
+		'infinity': '\\infty',
+		'limit': '\\lim_{x \\to \\infty}',
+		'limit to zero': '\\lim_{x \\to 0}',
+		'limit from above': '\\lim_{x \\to a^+}',
+		'limit from below': '\\lim_{x \\to a^-}',
+
+		// Matrices and Arrays
+		'matrix': '\\begin{matrix} a & b \\\\ c & d \\end{matrix}',
+		'pmatrix': '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}',
+		'bmatrix': '\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}',
+		'vmatrix': '\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}',
+
+		// Greek Letters
+		'alpha': '\\alpha',
+		'beta': '\\beta',
+		'gamma': '\\gamma',
+		'delta': '\\Delta',
+		'theta': '\\theta',
+		'pi': '\\pi',
+		'sigma': '\\sigma',
+		'omega': '\\omega',
+
+		// Operators and Relations
+		'plus minus': '\\pm',
+		'minus plus': '\\mp',
+		'times': '\\times',
+		'div': '\\div',
+		'equals': '=',
+		'not equals': '\\neq',
+		'approximately': '\\approx',
+		'less than': '<',
+		'greater than': '>',
+		'less or equal': '\\leq',
+		'greater or equal': '\\geq',
+
+		// Sets and Set Operations
+		'intersection': '\\cap',
+		'union': '\\cup',
+		'big intersection': '\\bigcap_{i=1}^n',
+		'big union': '\\bigcup_{i=1}^n',
+		'subset': '\\subset',
+		'proper subset': '\\subsetneq',
+		'superset': '\\supset',
+		'proper superset': '\\supsetneq',
+		'not subset': '\\not\\subset',
+		'element of': '\\in',
+		'not element of': '\\notin',
+		'empty set': '\\emptyset',
+		'null set': '\\varnothing',
+		'complement': 'A^c',
+		'set minus': '\\setminus',
+		'power set': '\\mathcal{P}',
+		'natural numbers': '\\mathbb{N}',
+		'integers': '\\mathbb{Z}',
+		'rational numbers': '\\mathbb{Q}',
+		'real numbers': '\\mathbb{R}',
+		'complex numbers': '\\mathbb{C}',
+		'set brackets': '\\{x : x > 0\\}',
+		'cartesian product': '\\times',
+		'therefore': '\\therefore',
+		'because': '\\because',
+
+		// Calculus and Functions
+		'partial': '\\partial',
+		'nabla': '\\nabla',
+		'derivative': '\\frac{d}{dx}',
+		'partial derivative': '\\frac{\\partial}{\\partial x}',
+		'sine': '\\sin',
+		'cosine': '\\cos',
+		'tangent': '\\tan',
+
+		// Arrows and Accents
+		'rightarrow': '\\rightarrow',
+		'leftarrow': '\\leftarrow',
+		'leftrightarrow': '\\leftrightarrow',
+		'Rightarrow': '\\Rightarrow',
+		'Leftarrow': '\\Leftarrow',
+		'hat': '\\hat{x}',
+		'bar': '\\bar{x}',
+		'vec': '\\vec{x}',
+
+		// Spacing and Alignment
+		'quad space': '\\quad',
+		'text': '\\text{text here}',
+		'newline': '\\\\',
+		'horizontal space': '\\hspace{1cm}',
+		'vertical space': '\\vspace{1cm}',
+
+		// Probability and Statistics
+		'probability': '\\mathbb{P}(A)',
+		'conditional probability': '\\mathbb{P}(A|B)',
+		'expected value': '\\mathbb{E}[X]',
+		'variance': '\\text{Var}(X)',
+		'standard deviation': '\\sigma',
+		'normal distribution': '\\mathcal{N}(\\mu,\\sigma^2)',
+		'binomial distribution': '\\text{Bin}(n,p)',
+		'random variable': '\\mathcal{X}',
+		'independent': '\\perp',
+		'correlation': '\\rho',
+		'covariance': '\\text{Cov}(X,Y)',
+		'combination': '\\binom{n}{k}',
+		'permutation': 'P(n,k)',
+		'factorial': 'n!',
+		'sample space': '\\Omega',
+		'given that': '|',
+		'independence': '\\perp\\!\\!\\perp',
+		'proportional to': '\\propto',
+		'chi-squared': '\\chi^2',
+		'beta distribution': '\\text{Beta}(\\alpha,\\beta)',
+		'gamma distribution': '\\text{Gamma}(k,\\theta)',
+		'poisson distribution': '\\text{Pois}(\\lambda)',
+		'uniform distribution': '\\text{Unif}(a,b)',
+		'exponential distribution': '\\text{Exp}(\\lambda)',
+
+		// Logic Symbols
+		'logical and': '\\land',
+		'logical or': '\\lor',
+		'logical not': '\\neg',
+		'implies': '\\implies',
+		'if and only if': '\\iff',
+		'forall': '\\forall',
+		'exists': '\\exists',
+		'not exists': '\\nexists',
+		'models': '\\models',
+		'proves': '\\vdash',
+		'contradiction': '\\bot',
+		'tautology': '\\top'
+	}
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class MathType extends Plugin {
+	settings: MathTypePrefs;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+		// Register the suggester
+		this.registerEditorSuggest(new MathTypeSuggest(this));
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		// Add settings tab
+		this.addSettingTab(new PrefsTab(this.app, this));
 	}
 
-	onunload() {
-
+	getWordUnderCursor(line: string, cursorPos: number): string {
+		const words = line.slice(0, cursorPos).split(' ');
+		return words[words.length - 1].toLowerCase();
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFUALT_PREFS, await this.loadData());
 	}
 
 	async saveSettings() {
@@ -91,26 +189,69 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+// Suggest dropdown
+class MathTypeSuggest extends EditorSuggest<string> {
+	plugin: MathType;
+
+	constructor(plugin: MathType) {
+		super(plugin.app);
+		this.plugin = plugin;
 	}
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
+	onTrigger(cursor: EditorPosition, editor: Editor): EditorSuggestTriggerInfo | null {
+		const line = editor.getLine(cursor.line);
+		const word = this.plugin.getWordUnderCursor(line, cursor.ch);
+
+		// Check if the word matches any of our mappings
+		const hasMatch = Object.keys(this.plugin.settings.customMappings)
+			.some(key => key.includes(word) && word.length >= 2); // Only trigger for 2+ characters
+
+		if (hasMatch) {
+			return {
+				start: {
+					line: cursor.line,
+					ch: cursor.ch - word.length
+				},
+				end: cursor,
+				query: word
+			};
+		}
+		return null;
 	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+	getSuggestions(context: EditorSuggestContext): string[] {
+		const word = this.plugin.getWordUnderCursor(context.query, context.query.length);
+		return Object.entries(this.plugin.settings.customMappings)
+			.filter(([key]) => key.includes(word))
+			.map(([_, value]) => value);
+	}
+
+	renderSuggestion(value: string, el: HTMLElement): void {
+		const suggestionEl = el.createDiv({cls: "suggestion-item"});
+		suggestionEl.createSpan({
+			text: value,
+			cls: "suggestion-content"
+		});
+	}
+
+	selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
+		if (!this.context) return;
+
+		const editor = this.context.editor;
+
+		editor.replaceRange(
+			`$${value}$`,
+			this.context.start,
+			this.context.end
+		);
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+// Prefs tab
+class PrefsTab extends PluginSettingTab {
+	plugin: MathType;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: MathType) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -120,15 +261,19 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
+		containerEl.createEl('h2', {text: 'MathType Suggester Prefs'});
+		containerEl.createEl('p', {text: 'Configure the mappings between words and MathJax syntax.'});
+
+		for (const [key, value] of Object.entries(this.plugin.settings.customMappings)) {
+			new Setting(containerEl)
+				.setName(`Mapping for "${key}"`)
+				.setDesc(`MathJax syntax for ${key}`)
+				.addText(text => text
+					.setValue(value)
+					.onChange(async (newValue) => {
+						this.plugin.settings.customMappings[key] = newValue;
+						await this.plugin.saveSettings();
+					}));
+		}
 	}
 }

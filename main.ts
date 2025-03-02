@@ -26,7 +26,7 @@ const DEFUALT_PREFS: MathTypePrefs = {
 		'double integral': '\\iint_{D}',
 		'triple integral': '\\iiint_{V}',
 		'contour integral': '\\oint_{C}',
-		
+
 		// Roots and Powers
 		'square root': '\\sqrt{x}',
 		'nth root': '\\sqrt[n]{x}',
@@ -229,19 +229,19 @@ class MathTypeSuggest extends EditorSuggest<string> {
 	}
 
 	renderSuggestion(value: string, el: HTMLElement): void {
-        const suggestionEl = el.createDiv({ cls: "suggestion-item" });
+		const suggestionEl = el.createDiv({cls: "suggestion-item"});
 
-        // Container for rendered MathJax output
-        const renderedEl = suggestionEl.createDiv({ cls: "suggestion-rendered" });
+		// Container for rendered MathJax output
+		const renderedEl = suggestionEl.createDiv({cls: "suggestion-rendered"});
 
-        MarkdownRenderer.render(
+		MarkdownRenderer.render(
 			this.app,
-            `$$${value}$$`,
-            renderedEl,
-            '',
+			`$$${value}$$`,
+			renderedEl,
+			'',
 			this.plugin,
-        );
-    }
+		);
+	}
 
 	selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
 		if (!this.context) return;

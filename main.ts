@@ -6,6 +6,7 @@ import {
 	EditorSuggestContext,
 	EditorSuggestTriggerInfo,
 	Plugin,
+	MarkdownRenderer,
 	PluginSettingTab,
 	Setting
 } from 'obsidian';
@@ -228,12 +229,19 @@ class MathTypeSuggest extends EditorSuggest<string> {
 	}
 
 	renderSuggestion(value: string, el: HTMLElement): void {
-		const suggestionEl = el.createDiv({cls: "suggestion-item"});
-		suggestionEl.createSpan({
-			text: value,
-			cls: "suggestion-content"
-		});
-	}
+        const suggestionEl = el.createDiv({ cls: "suggestion-item" });
+
+        // Container for rendered MathJax output
+        const renderedEl = suggestionEl.createDiv({ cls: "suggestion-rendered" });
+
+        MarkdownRenderer.render(
+			this.app,
+            `$$${value}$$`,
+            renderedEl,
+            '',
+			this.plugin,
+        );
+    }
 
 	selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
 		if (!this.context) return;

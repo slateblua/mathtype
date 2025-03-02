@@ -247,12 +247,21 @@ class MathTypeSuggest extends EditorSuggest<string> {
 		if (!this.context) return;
 
 		const editor = this.context.editor;
+		const lineContent = editor.getLine(this.context.start.line);
 
-		editor.replaceRange(
-			`$${value}$`,
-			this.context.start,
-			this.context.end
-		);
+		if (!lineContent.startsWith("$") && !lineContent.endsWith("$")) {
+			editor.replaceRange(
+				`$${value}$`,
+				this.context.start,
+				this.context.end
+			);
+		} else {
+			editor.replaceRange(
+				value,
+				this.context.start,
+				this.context.end
+			);
+		}
 	}
 }
 

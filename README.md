@@ -2,6 +2,8 @@
 
 Type math faster with quick suggestions from natural language.
 
+![Usage Instructions](usage.svg)
+
 ### Features
 
 - Easily convert natural language descriptions into mathematical expressions.

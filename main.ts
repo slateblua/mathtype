@@ -12,6 +12,7 @@ import {
 
 interface MathTypePrefs {
 	customMappings: { [key: string]: string };
+	startKey: string
 }
 
 const DEFUALT_PREFS: MathTypePrefs = {
@@ -159,7 +160,8 @@ const DEFUALT_PREFS: MathTypePrefs = {
 		'proves': '\\vdash',
 		'contradiction': '\\bot',
 		'tautology': '\\top'
-	}
+	},
+	startKey: "^"
 }
 
 export default class MathType extends Plugin {
@@ -202,9 +204,14 @@ class MathTypeSuggest extends EditorSuggest<string> {
 		const line = editor.getLine(cursor.line);
 		const word = this.plugin.getWordUnderCursor(line, cursor.ch);
 
+
+		if (!word.startsWith((this.plugin.settings.startKey))) return null;
+
+		const lookup = word.substring(1)
+
 		// Check if the word matches any of our mappings
 		const hasMatch = Object.keys(this.plugin.settings.customMappings)
-			.some(key => key.includes(word) && word.length >= 2); // Only trigger for 2+ characters
+			.some(key => key.includes(lookup) && lookup.length >= 2); // Only trigger for 2+ characters
 
 		if (hasMatch) {
 			return {
@@ -213,7 +220,7 @@ class MathTypeSuggest extends EditorSuggest<string> {
 					ch: cursor.ch - word.length
 				},
 				end: cursor,
-				query: word
+				query: lookup
 			};
 		}
 		return null;
@@ -262,18 +269,16 @@ class PrefsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl('h2', {text: 'MathType Suggester Prefs'});
-		containerEl.createEl('p', {text: 'Configure the mappings between words and MathJax syntax.'});
 
-		for (const [key, value] of Object.entries(this.plugin.settings.customMappings)) {
-			new Setting(containerEl)
-				.setName(`Mapping for "${key}"`)
-				.setDesc(`MathJax syntax for ${key}`)
-				.addText(text => text
-					.setValue(value)
-					.onChange(async (newValue) => {
-						this.plugin.settings.customMappings[key] = newValue;
-						await this.plugin.saveSettings();
-					}));
-		}
+		new Setting(containerEl)
+			.setName('Start Key')
+			.setDesc('Set the key to trigger MathType suggestions.')
+			.addText(text => text
+				.setValue(this.plugin.settings.startKey || '')
+				.onChange(async (newValue) => {
+					this.plugin.settings.startKey = newValue;
+					await this.plugin.saveSettings();
+				}));
+
 	}
 }

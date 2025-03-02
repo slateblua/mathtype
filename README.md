@@ -2,7 +2,7 @@
 
 Type math faster with quick suggestions from natural language.
 
-![Usage Instructions](usage.svg)
+![Usage Instructions](usage.png)
 
 ### Features
 

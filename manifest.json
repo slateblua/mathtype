@@ -1,7 +1,7 @@
 {
 	"id": "mathtypebyslateblua",
 	"name": "MathType",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Allows to type math faster with on the fly suggestions",
 	"author": "slateblua",

@@ -3,7 +3,7 @@
 	"name": "MathType",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A plugin to type math faster",
+	"description": "Allows to type math faster with on the fly suggestions",
 	"author": "slateblua",
 	"authorUrl": "https://slateblua.github.io",
 	"isDesktopOnly": true

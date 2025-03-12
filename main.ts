@@ -279,10 +279,9 @@ class PrefsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'MathType Suggester Prefs'});
 
 		new Setting(containerEl)
-			.setName('Start Key')
+			.setName('Start key')
 			.setDesc('Set the key to trigger MathType suggestions.')
 			.addText(text => text
 				.setValue(this.plugin.settings.startKey || '')
